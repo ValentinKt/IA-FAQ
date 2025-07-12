@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Ajouter un document PDF</h2>
+<form method="post" enctype="multipart/form-data">
+    <div class="mb-3">
+        <label for="pdf_file" class="form-label">Fichier PDF</label>
+        <input type="file" class="form-control" id="pdf_file" name="pdf_file" accept=".pdf" required>
+    </div>
+    <div class="mb-3">
+        <label for="description" class="form-label">Description</label>
+        <textarea class="form-control" id="description" name="description" rows="3" placeholder="Description du document (optionnel)"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Uploader</button>
+    <a href="/admin/pdfs" class="btn btn-secondary">Annuler</a>
+</form>
+{% endblock %}
+

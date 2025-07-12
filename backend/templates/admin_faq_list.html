@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Gestion de la FAQ</h2>
+<a href="{{ url_for('faq.admin_add_faq') }}" class="btn btn-success mb-3">Ajouter une question</a>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Question</th>
+            <th>Réponse</th>
+            <th>Source</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for faq in faqs %}
+        <tr>
+            <td>{{ faq.id }}</td>
+            <td>{{ faq.question|truncate(60) }}</td>
+            <td>{{ faq.answer|truncate(60) }}</td>
+            <td>{{ faq.source }}</td>
+            <td>
+                <a href="{{ url_for('faq.admin_edit_faq', faq_id=faq.id) }}" class="btn btn-sm btn-warning">Modifier</a>
+                <form action="{{ url_for('faq.admin_delete_faq', faq_id=faq.id) }}" method="post" style="display:inline;">
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Supprimer cette question ?');">Supprimer</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+

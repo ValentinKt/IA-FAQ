@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Tableau de bord administrateur</h2>
+
+<!-- Statistiques générales -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ stats.total_faqs }}</h4>
+                        <p class="card-text">Questions FAQ</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-question-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ stats.total_pdfs }}</h4>
+                        <p class="card-text">Documents PDF</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-file-pdf fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ stats.total_users }}</h4>
+                        <p class="card-text">Utilisateurs</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ stats.total_visits }}</h4>
+                        <p class="card-text">Visites totales</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-chart-line fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistiques des visites -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Visites récentes</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Aujourd'hui :</strong> {{ stats.visits_today }}</p>
+                <p><strong>Cette semaine :</strong> {{ stats.visits_week }}</p>
+                <p><strong>Ce mois :</strong> {{ stats.visits_month }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Contenu par source</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>FAQ manuelles :</strong> {{ stats.manual_faqs }}</p>
+                <p><strong>FAQ générées par IA :</strong> {{ stats.ia_faqs }}</p>
+                <div class="progress mb-2">
+                    <div class="progress-bar bg-success" style="width: {{ (stats.manual_faqs / stats.total_faqs * 100) if stats.total_faqs > 0 else 0 }}%"></div>
+                    <div class="progress-bar bg-info" style="width: {{ (stats.ia_faqs / stats.total_faqs * 100) if stats.total_faqs > 0 else 0 }}%"></div>
+                </div>
+                <small class="text-muted">Vert: Manuel, Bleu: IA</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pages les plus visitées -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Pages les plus visitées</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>URL</th>
+                            <th>Nombre de visites</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for page in top_pages %}
+                        <tr>
+                            <td>{{ page.url|truncate(60) }}</td>
+                            <td><span class="badge bg-primary">{{ page.count }}</span></td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="2" class="text-center">Aucune donnée de visite disponible</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Activité récente -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>FAQ récentes</h5>
+            </div>
+            <div class="card-body">
+                {% for faq in recent_faqs %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <small class="text-muted">{{ faq.created_at.strftime('%d/%m %H:%M') if faq.created_at else '' }}</small><br>
+                        <strong>{{ faq.question|truncate(40) }}</strong>
+                        <span class="badge bg-{{ 'success' if faq.source == 'manuel' else 'info' }} ms-2">{{ faq.source }}</span>
+                    </div>
+                </div>
+                <hr>
+                {% else %}
+                <p class="text-muted">Aucune FAQ</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>PDF récents</h5>
+            </div>
+            <div class="card-body">
+                {% for pdf in recent_pdfs %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <small class="text-muted">{{ pdf.upload_date.strftime('%d/%m %H:%M') if pdf.upload_date else '' }}</small><br>
+                        <strong>{{ pdf.filename|truncate(40) }}</strong>
+                    </div>
+                </div>
+                <hr>
+                {% else %}
+                <p class="text-muted">Aucun PDF</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

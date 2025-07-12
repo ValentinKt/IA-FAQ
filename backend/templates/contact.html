@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Contact - FAQ IA{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-md-10">
+        <div class="content-card">
+            <div class="page-header">
+                <h1><i class="fas fa-envelope me-2"></i>Contactez-nous</h1>
+                <p>Vous avez une question ? N'hésitez pas à nous contacter</p>
+            </div>
+
+            <div class="p-4">
+                {% if success %}
+                <div class="alert alert-success">
+                    <strong>Merci {% if name %}{{ name }}{% endif %} !</strong> Votre message a été envoyé avec succès.
+                </div>
+                {% endif %}
+
+                <form method="POST" action="{{ url_for('main.contact') }}">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="name" class="form-label">Nom complet *</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email *</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Message *</label>
+                        <textarea class="form-control" id="message" name="message" rows="5" required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-1"></i>Envoyer
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

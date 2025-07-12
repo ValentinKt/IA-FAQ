@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Gestion des documents PDF</h2>
+<a href="/admin/pdfs/upload" class="btn btn-success mb-3">Ajouter un PDF</a>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nom du fichier</th>
+            <th>Description</th>
+            <th>Date d'upload</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for pdf in pdfs %}
+        <tr>
+            <td>{{ pdf.id }}</td>
+            <td>{{ pdf.filename }}</td>
+            <td>{{ pdf.description|truncate(60) if pdf.description else 'Aucune description' }}</td>
+            <td>{{ pdf.upload_date.strftime('%d/%m/%Y %H:%M') if pdf.upload_date else '' }}</td>
+            <td>
+                <a href="/uploads/{{ pdf.filename }}" class="btn btn-sm btn-info" target="_blank">Voir</a>
+                <form action="/admin/pdfs/delete/{{ pdf.id }}" method="post" style="display:inline;">
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Supprimer ce PDF ?');">Supprimer</button>
+                </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="5" class="text-center">Aucun document PDF</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+

@@ -1,0 +1,332 @@
+{% extends "base.html" %}
+
+{% block title %}Génération IA - FAQ Admin{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>🤖 Génération de FAQ par IA</h2>
+                <a href="{{ url_for('faq.admin_faq_list') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Retour aux FAQ
+                </a>
+            </div>
+
+            <!-- Statut Ollama -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-robot"></i> Statut du Service IA
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-2">
+                                <strong>Connexion Ollama:</strong>
+                                {% if ollama_status %}
+                                    <span class="badge bg-success text-white">
+                                        <i class="fas fa-check-circle"></i> Connecté
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-danger text-white">
+                                        <i class="fas fa-times-circle"></i> Déconnecté
+                                    </span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-2">
+                                <strong>Modèle actuel:</strong>
+                                <span class="badge bg-primary text-white">{{ current_model }}</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    {% if not ollama_status %}
+                        <div class="alert alert-warning mt-3">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Attention:</strong> Ollama n'est pas accessible.
+                            Assurez-vous que le service est démarré sur votre serveur.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Génération de FAQ -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-magic"></i> Générer des FAQ à partir d'un PDF
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if pdfs %}
+                        <form id="generateForm">
+                            <div class="form-group">
+                                <label for="pdf_id">Sélectionner un document PDF :</label>
+                                <select name="pdf_id" id="pdf_id" class="form-control" required>
+                                    <option value="">-- Choisir un document --</option>
+                                    {% for pdf in pdfs %}
+                                        <option value="{{ pdf.id }}">
+                                            {{ pdf.filename }}
+                                            ({{ pdf.upload_date.strftime('%d/%m/%Y à %H:%M') }})
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="confirmGeneration" required>
+                                    <label class="form-check-label" for="confirmGeneration">
+                                        Je comprends que ce processus peut prendre plusieurs minutes
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>Information:</strong>
+                                Le processus de génération peut prendre 2 à 5 minutes selon la taille du document.
+                                Les FAQ générées seront automatiquement ajoutées à votre liste et marquées comme "générées par IA".
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-lg" id="generateBtn"
+                                    {% if not ollama_status %}disabled{% endif %}>
+                                <i class="fas fa-magic"></i> Générer des FAQ
+                            </button>
+                        </form>
+
+                        <!-- Zone de progression -->
+                        <div id="progressArea" class="mt-4" style="display: none;">
+                            <div class="alert alert-info">
+                                <i class="fas fa-clock"></i>
+                                <strong>Génération en cours...</strong>
+                                Veuillez patienter, ce processus peut prendre plusieurs minutes.
+                                <div class="progress mt-2">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                         role="progressbar" style="width: 100%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Zone de résultats -->
+                        <div id="resultArea" class="mt-4" style="display: none;">
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Aucun PDF disponible.</strong>
+                            Vous devez d'abord <a href="{{ url_for('pdf.admin_pdf_upload') }}">uploader des documents PDF</a>
+                            avant de pouvoir générer des FAQ.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Instructions -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-question-circle"></i> Comment ça fonctionne
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ol>
+                        <li><strong>Sélectionnez un PDF</strong> : Choisissez un document depuis lequel générer des FAQ</li>
+                        <li><strong>Lancez la génération</strong> : L'IA va analyser le contenu du document</li>
+                        <li><strong>Patientez</strong> : Le processus peut prendre quelques minutes</li>
+                        <li><strong>Vérifiez les résultats</strong> : Les FAQ générées apparaîtront dans votre liste</li>
+                        <li><strong>Modifiez si nécessaire</strong> : Vous pouvez éditer ou supprimer les FAQ générées</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('generateForm');
+    const generateBtn = document.getElementById('generateBtn');
+    const progressArea = document.getElementById('progressArea');
+    const resultArea = document.getElementById('resultArea');
+
+    if (form) {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const pdfId = document.getElementById('pdf_id').value;
+            if (!pdfId) {
+                alert('Veuillez sélectionner un PDF');
+                return;
+            }
+
+            // Désactiver le bouton et afficher la progression
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Lancement...';
+            progressArea.style.display = 'block';
+            resultArea.style.display = 'none';
+
+            try {
+                console.log('Lancement de la génération asynchrone pour PDF ID:', pdfId);
+
+                // Étape 1: Lancer la génération en arrière-plan
+                const response = await fetch('/api/ia/start-generation', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        pdf_id: pdfId
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('Réponse start-generation:', data);
+
+                if (data.success) {
+                    const taskId = data.task_id;
+                    generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Génération en cours...';
+
+                    // Étape 2: Surveiller la progression de la tâche
+                    await monitorTask(taskId);
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                progressArea.style.display = 'none';
+                resultArea.style.display = 'block';
+                resultArea.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Erreur:</strong> ${error.message}
+                    </div>
+                `;
+            } finally {
+                // Réactiver le bouton
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '<i class="fas fa-magic"></i> Générer des FAQ';
+            }
+        });
+    }
+
+    async function monitorTask(taskId) {
+        const maxAttempts = 120; // 10 minutes maximum (120 * 5 secondes)
+        let attempts = 0;
+
+        const progressBar = progressArea.querySelector('.progress-bar');
+        const progressText = progressArea.querySelector('.alert-info');
+
+        while (attempts < maxAttempts) {
+            try {
+                const response = await fetch(`/api/ia/task-status/${taskId}`);
+
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('Statut tâche:', data);
+
+                if (data.success) {
+                    const task = data.task;
+
+                    // Mettre à jour la barre de progression
+                    if (progressBar) {
+                        progressBar.style.width = `${task.progress}%`;
+                    }
+
+                    // Mettre à jour le message
+                    if (progressText) {
+                        progressText.innerHTML = `
+                            <i class="fas fa-clock"></i>
+                            <strong>${task.message}</strong>
+                            <div class="progress mt-2">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                     role="progressbar" style="width: ${task.progress}%"></div>
+                            </div>
+                        `;
+                    }
+
+                    if (task.status === 'completed') {
+                        // Tâche terminée avec succès
+                        progressArea.style.display = 'none';
+                        resultArea.style.display = 'block';
+
+                        const result = task.result;
+                        resultArea.innerHTML = `
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle"></i>
+                                <strong>Succès!</strong> ${result.message}
+                                <br>
+                                <small>Document traité: ${result.pdf_filename}</small>
+                                <br>
+                                <a href="{{ url_for('faq.admin_faq_list') }}" class="btn btn-sm btn-success mt-2">
+                                    <i class="fas fa-eye"></i> Voir les FAQ générées
+                                </a>
+                            </div>
+                        `;
+                        return; // ARRÊTER la surveillance ici
+
+                    } else if (task.status === 'failed') {
+                        // Tâche échouée
+                        progressArea.style.display = 'none';
+                        resultArea.style.display = 'block';
+                        resultArea.innerHTML = `
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <strong>Erreur:</strong> ${task.error}
+                            </div>
+                        `;
+                        return; // ARRÊTER la surveillance ici
+                    }
+
+                    // Si la tâche est toujours en cours, continuer la surveillance
+                } else {
+                    throw new Error(data.message);
+                }
+
+                // Attendre 5 secondes avant de vérifier à nouveau
+                await new Promise(resolve => setTimeout(resolve, 5000));
+                attempts++;
+
+            } catch (error) {
+                console.error('Erreur lors de la surveillance:', error);
+
+                // Si c'est une erreur 404 et qu'on a déjà affiché un succès, arrêter
+                if (error.message.includes('404') && resultArea.style.display === 'block') {
+                    console.log('Tâche déjà terminée, arrêt de la surveillance');
+                    return;
+                }
+
+                attempts++;
+                await new Promise(resolve => setTimeout(resolve, 5000));
+            }
+        }
+
+        // Timeout atteint
+        progressArea.style.display = 'none';
+        resultArea.style.display = 'block';
+        resultArea.innerHTML = `
+            <div class="alert alert-warning">
+                <i class="fas fa-clock"></i>
+                <strong>Timeout:</strong> La génération prend plus de temps que prévu.
+                Vérifiez les FAQ dans quelques minutes.
+                <br>
+                <a href="{{ url_for('faq.admin_faq_list') }}" class="btn btn-sm btn-primary mt-2">
+                    <i class="fas fa-eye"></i> Vérifier les FAQ
+                </a>
+            </div>
+        `;
+    }
+});
+</script>
+{% endblock %}

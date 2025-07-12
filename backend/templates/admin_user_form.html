@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>{% if edit %}Modifier l'utilisateur{% else %}Ajouter un utilisateur{% endif %}</h2>
+<form method="POST">
+    <div class="form-group mb-3">
+        <label for="username">Nom d'utilisateur</label>
+        <input type="text" class="form-control" id="username" name="username" value="{{ user.username if edit else '' }}" required>
+    </div>
+    <div class="form-group mb-3">
+        <label for="password">Mot de passe{% if edit %} (laisser vide pour ne pas changer){% endif %}</label>
+        <input type="password" class="form-control" id="password" name="password" {% if not edit %}required{% endif %}>
+    </div>
+    <div class="form-group mb-3">
+        <input type="checkbox" id="is_admin" name="is_admin" {% if (edit and user.is_admin) or (not edit) %}checked{% endif %}>
+        <label for="is_admin">Administrateur</label>
+    </div>
+    <button type="submit" class="btn btn-primary">{% if edit %}Modifier{% else %}Ajouter{% endif %}</button>
+    <a href="{{ url_for('admin.admin_users') }}" class="btn btn-secondary">Annuler</a>
+</form>
+{% endblock %}

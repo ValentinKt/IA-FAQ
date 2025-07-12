@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block title %}{{ faq.question[:50] }}... - FAQ IA{% endblock %}
+
+{% block content %}
+<div class="content-card">
+    <div class="page-header">
+        <h1><i class="fas fa-question-circle me-3"></i>Détail de la FAQ</h1>
+        <p>Question #{{ faq.id }}</p>
+    </div>
+
+    <div class="p-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('faq.faq_list') }}">
+                        <i class="fas fa-home me-1"></i>FAQs
+                    </a>
+                </li>
+                <li class="breadcrumb-item active">Question #{{ faq.id }}</li>
+            </ol>
+        </nav>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-light">
+                        <h2 class="h4 mb-0">
+                            <i class="fas fa-comment-question text-primary me-2"></i>
+                            Question
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <p class="lead">{{ faq.question }}</p>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-header bg-light">
+                        <h2 class="h4 mb-0">
+                            <i class="fas fa-comment-alt text-success me-2"></i>
+                            Réponse
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="answer-content">
+                            {{ faq.answer|nl2br|safe }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-light">
+                        <h3 class="h5 mb-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Informations
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-item mb-3">
+                            <label class="fw-bold text-muted">Source :</label>
+                            <div>
+                                <span class="source-badge {{ 'source-ia' if faq.source == 'ia' else 'source-manual' }}">
+                                    <i class="fas {{ 'fa-robot' if faq.source == 'ia' else 'fa-user' }} me-1"></i>
+                                    {{ 'Intelligence Artificielle' if faq.source == 'ia' else 'Ajout Manuel' }}
+                                </span>
+                            </div>
+                        </div>
+
+                        {% if faq.created_at %}
+                        <div class="info-item mb-3">
+                            <label class="fw-bold text-muted">Date de création :</label>
+                            <div>
+                                <i class="fas fa-calendar-plus text-primary me-1"></i>
+                                {{ faq.created_at.strftime('%d/%m/%Y') }}
+                                <br>
+                                <small class="text-muted">{{ faq.created_at.strftime('%H:%M:%S') }}</small>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if faq.updated_at and faq.updated_at != faq.created_at %}
+                        <div class="info-item mb-3">
+                            <label class="fw-bold text-muted">Dernière modification :</label>
+                            <div>
+                                <i class="fas fa-edit text-warning me-1"></i>
+                                {{ faq.updated_at.strftime('%d/%m/%Y') }}
+                                <br>
+                                <small class="text-muted">{{ faq.updated_at.strftime('%H:%M:%S') }}</small>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="info-item">
+                            <label class="fw-bold text-muted">ID :</label>
+                            <div>
+                                <code class="bg-light px-2 py-1 rounded">#{{ faq.id }}</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-header bg-light">
+                        <h3 class="h5 mb-0">
+                            <i class="fas fa-tools me-2"></i>
+                            Actions
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-primary" onclick="copyToClipboard()">
+                                <i class="fas fa-copy me-2"></i>Copier le lien
+                            </button>
+                            <button class="btn btn-outline-success" onclick="printFAQ()">
+                                <i class="fas fa-print me-2"></i>Imprimer
+                            </button>
+                            <button class="btn btn-outline-info" onclick="shareFAQ()">
+                                <i class="fas fa-share me-2"></i>Partager
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-header bg-light">
+                        <h3 class="h5 mb-0">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            Statistiques
+                        </h3>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="stat-number">{{ faq.question|length }}</div>
+                                <div class="stat-label">Caractères (Q)</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stat-number">{{ faq.answer|length }}</div>
+                                <div class="stat-label">Caractères (R)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4 text-center">
+            <a href="{{ url_for('faq.faq_list') }}" class="btn btn-primary">
+                <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+    .info-item label {
+        display: block;
+        font-size: 0.875rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .answer-content {
+        line-height: 1.7;
+        font-size: 1.1rem;
+    }
+
+    .answer-content p {
+        margin-bottom: 1rem;
+    }
+</style>
+
+<script>
+function copyToClipboard() {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(function() {
+        // Créer une notification temporaire
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-success alert-dismissible fade show position-fixed';
+        alert.style.top = '20px';
+        alert.style.right = '20px';
+        alert.style.zIndex = '9999';
+        alert.innerHTML = `
+            <i class="fas fa-check me-2"></i>Lien copié dans le presse-papiers !
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+
+        document.body.appendChild(alert);
+
+        // Supprimer automatiquement après 3 secondes
+        setTimeout(() => {
+            if (alert.parentNode) {
+                alert.parentNode.removeChild(alert);
+            }
+        }, 3000);
+    }).catch(function(err) {
+        console.error('Erreur lors de la copie: ', err);
+    });
+}
+
+function printFAQ() {
+    const printWindow = window.open('', '_blank');
+    const content = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>FAQ #{{ faq.id }} - {{ faq.question[:50] }}...</title>
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+            <style>
+                body { font-family: Arial, sans-serif; margin: 2rem; }
+                .question { font-weight: bold; font-size: 1.2rem; margin-bottom: 1rem; }
+                .answer { line-height: 1.6; margin-bottom: 2rem; }
+                .metadata { font-size: 0.9rem; color: #666; border-top: 1px solid #ddd; padding-top: 1rem; }
+                @media print {
+                    body { margin: 0; }
+                }
+            </style>
+        </head>
+        <body>
+            <h1>FAQ #{{ faq.id }}</h1>
+            <div class="question">
+                <strong>Question :</strong> {{ faq.question }}
+            </div>
+            <div class="answer">
+                <strong>Réponse :</strong><br>
+                {{ faq.answer|nl2br|safe }}
+            </div>
+            <div class="metadata">
+                <p><strong>Source :</strong> {{ 'Intelligence Artificielle' if faq.source == 'ia' else 'Ajout Manuel' }}</p>
+                {% if faq.created_at %}
+                <p><strong>Créé le :</strong> {{ faq.created_at.strftime('%d/%m/%Y à %H:%M') }}</p>
+                {% endif %}
+                {% if faq.updated_at and faq.updated_at != faq.created_at %}
+                <p><strong>Modifié le :</strong> {{ faq.updated_at.strftime('%d/%m/%Y à %H:%M') }}</p>
+                {% endif %}
+            </div>
+        </body>
+        </html>
+    `;
+
+    printWindow.document.write(content);
+    printWindow.document.close();
+    printWindow.print();
+}
+
+function shareFAQ() {
+    if (navigator.share) {
+        navigator.share({
+            title: 'FAQ #{{ faq.id }}',
+            text: '{{ faq.question }}',
+            url: window.location.href
+        });
+    } else {
+        // Fallback pour les navigateurs qui ne supportent pas l'API Web Share
+        copyToClipboard();
+    }
+}
+</script>
+{% endblock %}
