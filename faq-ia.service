@@ -1,0 +1,20 @@
+[Unit]
+Description=FAQ-IA Flask Application
+After=network.target
+
+[Service]
+Type=notify
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/faq-ia/backend
+Environment=PATH=/var/www/faq-ia/backend/venv/bin
+ExecStart=/var/www/faq-ia/backend/venv/bin/gunicorn --config gunicorn.conf.py app:app
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=on-failure
+RestartSec=5s
+KillMode=mixed
+TimeoutStopSec=5
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
