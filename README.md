@@ -254,7 +254,7 @@ server {
 # Script de démarrage pour Gunicorn
 # Usage: ./start_gunicorn.sh
 
-cd /home/tom/Documents/faq-IA/backend
+cd /home/valentin/Python/MNS/IA-FAQ/backend
 
 # Activer l'environnement virtuel
 source venv/bin/activate
@@ -281,7 +281,7 @@ sudo apt install python3 python3-pip python3-venv
 
 ```bash
 # Aller dans le dossier backend
-cd /home/tom/Documents/faq-IA/backend
+cd /home/valentin/Python/MNS/IA-FAQ/backend
 
 # Installer les dépendances (y compris Gunicorn)
 pip install -r requirements.txt
@@ -299,7 +299,7 @@ chmod +x ../start_gunicorn.sh
 
 ```bash
 # Aller dans le dossier frontend
-cd /home/tom/Bureau/ia_faq/frontend
+cd /home/valentin/Python/MNS/IA-FAQ/frontend
 
 # Installer les dépendances Node.js
 npm install
@@ -332,9 +332,9 @@ sudo systemctl enable nginx
 
 ```bash
 # Démarrer Gunicorn
-cd /home/tom/Bureau/ia_faq
+cd /home/valentin/Python/MNS/IA-FAQ
 ./start_gunicorn.sh
-
+# Vérifier que Gunicorn est en cours d'exécution
 # Vérifier que Gunicorn fonctionne
 ps aux | grep gunicorn
 
