@@ -12,6 +12,7 @@ Sujet de Projet Web : Implémentation d'un Site Web avec FAQ Intelligente et
 Administration
 
 ## 1. Introduction
+
 Ce projet a pour objectif de développer un site web interactif en Python, intégrant
 une section "Foire Aux Questions" (FAQ) intelligente. Cette FAQ affichera des
 questions-réponses qui pourront être initialement générées et enrichies par une IA
@@ -20,7 +21,9 @@ d'un corpus de documents PDF décrivant des formations. Un système
 d'administration complet permettra de gérer, modifier, supprimer et ajouter
 manuellement ces entrées de la FAQ. De plus, des fonctionnalités d'analyse et de
 prédiction des visites seront mises en place.
+
 ## 2. Objectifs du Projet
+
 Les objectifs principaux de ce projet sont les suivants :
 
 - Développement d'un site web robuste : Créer un site web fonctionnel et intuitif
@@ -41,6 +44,7 @@ journalisation des visites et de création d'un modèle de prédiction des visit
 basé sur le Machine Learning.
 
 ## 3. Fonctionnalités Détaillées
+
 3.1. Partie Utilisateur (Frontend)
 
 - Page d'accueil : Présentation du site, informations générales.
@@ -98,6 +102,7 @@ régression) pour prédire le nombre de visites futures sur le site.
 o Visualisation des prédictions dans le tableau de bord administrateur.
 
 ## 4. Requirements Techniques
+
 4.1. Requirements Logiciels
 
 - Système d'exploitation : Linux (Ubuntu/Debian recommandé), macOS, ou
@@ -158,9 +163,11 @@ JavaScript).
 4. Développement du Backend (API) : Implémentation des vues, routes, gestion
 des requêtes.
 5. Intégration d'Ollama et du SML (pour l'administration) :
- - Installation d'Ollama.
- - Téléchargement du SML choisi.
- - Implémentation du pipeline RAG (extraction PDF, indexation, recherche, génération assistée pour les administrateurs).
+
+   - Installation d'Ollama.
+   - Téléchargement du SML choisi.
+   - Implémentation du pipeline RAG (extraction PDF, indexation, recherche, génération assistée pour les administrateurs).
+
 6. Développement du système d'administration : Interfaces CRUD pour la FAQ et,autres entités, y compris le module de génération assistée par l'IA.
 7. Mise en place de la journalisation des visites.
 8. Développement du module ML pour la prédiction des visites : Collecte dedonnées, entraînement du modèle, intégration.
@@ -173,10 +180,10 @@ Cette section décrit la configuration complète pour déployer l'application FA
 
 ### Architecture de déploiement
 
-```
+```md
 [Client] → [Nginx] → [Gunicorn] → [Flask App]
                 ↓
-        [React Build (fichiers statiques)]
+        [Build (fichiers statiques)]
 ```
 
 ### Configuration Nginx
@@ -186,7 +193,7 @@ Cette section décrit la configuration complète pour déployer l'application FA
 ```nginx
 server {
     listen 80;
-    server_name cd2ia-thomas.stagiairesmns.fr;
+    server_name cd2ia-valentin.stagiairesmns.fr;
 
     # Taille maximale pour les uploads
     client_max_body_size 10M;
@@ -194,14 +201,14 @@ server {
     # Servir les fichiers statiques du frontend React
     location / {
         try_files $uri $uri/ @backend;
-        root /home/tom/Bureau/ia_faq/frontend/build;
+        root /home/valentin/Python/MNS/FAQ-AI/frontend/build;
         index index.html;
     }
 
     # Fallback pour les routes React (SPA)
     location @backend {
         try_files $uri /index.html;
-        root /home/tom/Bureau/ia_faq/frontend/build;
+        root /home/valentin/Python/MNS/FAQ-AI/frontend/build;
     }
 
     # API Backend via Gunicorn
@@ -230,7 +237,7 @@ server {
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
         expires 1y;
         add_header Cache-Control "public, immutable";
-        root /home/tom/Bureau/ia_faq/frontend/build;
+        root /home/valentin/Python/MNS/FAQ-AI/frontend/build;
     }
 
     # Logs
@@ -260,6 +267,7 @@ gunicorn --config gunicorn.conf.py app:app
 ### Étapes de déploiement
 
 #### 1. Prérequis serveur
+
 ```bash
 # Installer nginx
 sudo apt update
@@ -338,11 +346,13 @@ tail -f /var/log/nginx/ia_faq_error.log
 ### Scripts utiles
 
 #### Arrêter Gunicorn
+
 ```bash
 pkill -f gunicorn
 ```
 
 #### Redémarrer l'application
+
 ```bash
 # Arrêter Gunicorn
 pkill -f gunicorn
@@ -355,6 +365,7 @@ sudo systemctl reload nginx
 ```
 
 #### Surveillance des logs
+
 ```bash
 # Logs Gunicorn
 tail -f /var/log/gunicorn/access.log
@@ -374,7 +385,7 @@ Pour activer HTTPS avec Let's Encrypt :
 sudo apt install certbot python3-certbot-nginx
 
 # Obtenir le certificat SSL
-sudo certbot --nginx -d cd2ia-thomas.stagiairesmns.fr
+sudo certbot --nginx -d cd2ia-valentin.stagiairesmns.fr
 
 # Renouvellement automatique
 sudo crontab -e
@@ -384,6 +395,7 @@ sudo crontab -e
 ### Monitoring et Performance
 
 #### Vérifier le statut des services
+
 ```bash
 # Status nginx
 sudo systemctl status nginx
@@ -416,11 +428,11 @@ sudo netstat -tlnp | grep :80
 
 ```bash
 # Test API
-curl http://cd2ia-thomas.stagiairesmns.fr/api/faq
+curl http://cd2ia-valentin.stagiairesmns.fr/api/faq
 
 # Test Frontend
-curl http://cd2ia-thomas.stagiairesmns.fr/
+curl http://cd2ia-valentin.stagiairesmns.fr/
 
 # Test avec headers
-curl -H "Host: cd2ia-thomas.stagiairesmns.fr" http://127.0.0.1/api/faq
+curl -H "Host: cd2ia-valentin.stagiairesmns.fr" http://127.0.0.1/api/faq
 ```
